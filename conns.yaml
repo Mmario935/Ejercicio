@@ -1,0 +1,7 @@
+sample-data:
+  driver: bamboo_lib.connectors.drivers.http.HttpDriver
+  uri: https://drive.google.com/uc?export=download&id=1r0xTsIDMpK8NUsXXkE2SlNcTIa-dF-z0
+
+clickhouse-local:
+  driver: bamboo_lib.connectors.drivers.clickhouse.ClickhouseDriver
+  uri: clickhouse://$DB_USER:$DB_PW@$DB_URL/$DB_NAME
