@@ -8,35 +8,34 @@ from bamboo_lib.connectors.models import Connector
 #LoadStep
 
 class TransformStep(PipelineStep):
-    def run_step(self, prev, params):  #Se que puedo usar params para obteenr parametros, pero en este paso que real utilidad le puedo dar?
+    def run_step(self, prev, params):  #params create a new column with values depend what values i give, for example i gave years to create tables for every year
 
         df = pd.read_csv(prev)    
-        #Aplico los mismo pasos de panda x ahora
-        df=df.melt(id_vars=['puma_id','occupation_id'],value_vars=['men_20','men_30','women_20','women_30']) #Tranformo al formato tidy
-        df['sex_id'] = df['variable'].apply(lambda x: '1' if x == 'men_20' or x=='men_30' else '2') #Separo por genero
-        df['age_id'] = df['variable'].apply(lambda x: '1' if x == 'men_20' or x=='women_20' else '2') #Separo por edad
-        #Selecciono solo los valores que necesito
+        #I can try in ipynb previusly to check if everything is right, and finally copy paste here
+        df=df.melt(id_vars=['puma_id','occupation_id'],value_vars=['men_20','men_30','women_20','women_30']) 
+        df['sex_id'] = df['variable'].apply(lambda x: '1' if x == 'men_20' or x=='men_30' else '2') 
+        df['age_id'] = df['variable'].apply(lambda x: '1' if x == 'men_20' or x=='women_20' else '2') 
         df=df[['puma_id','occupation_id','sex_id','age_id','value']]
-        df.columns=['puma_id','occupation_id','sex_id','age_id','total'] #Renombro columnas
+        df.columns=['puma_id','occupation_id','sex_id','age_id','total']
         print(df.head())
-        #print(df.info())   #Me srive para revisar si hay nulos
-        df=df.copy() #Copio el valor para guardarlo y luego lo retorno
-        df['year']=params.get('year')
+        #print(df.info())   #Info about dataset, so I can identify the null values
+        df=df.copy() 
+        df['year']=params.get('year')  #Not necessary at all, only if a want use new parameters wuth parameters_list function
         print(params.get('year'))
         return df
 
 class ExamplePipeline(EasyPipeline):
     @staticmethod
-    def parameter_list(): #¿Para qué?
-        return [Parameter(label='year',name='year',dtype='int')]
+    def parameter_list(): #Create the new parameters column, depending the values i gave.
+        return [Parameter(label='year',name='year',dtype='int')]  #Here I use python syntax for dtype
 
     @staticmethod
     def steps(params):
-        download_step = DownloadStep(connector="sample-data",connector_path="conns.yaml") #Descargo el archivo ebtregandoi el nombre del conector del conns, y entregando la ruta que lo almacena
+        download_step = DownloadStep(connector="sample-data",connector_path="conns.yaml") #Download the dataframe from I indicate to the code
     
         transform_step = TransformStep()
         db_conector=Connector.fetch('clickhouse-local',open('conns.yaml'))
-        dtype={'puma_id':'String',
+        dtype={'puma_id':'String',  #I need to use the Clickhouse Dtype syntax
                'occupation-id':'String',
                'sex_id':'UInt8',
                'age_id':'UInt8',
